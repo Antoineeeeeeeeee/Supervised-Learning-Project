@@ -1,0 +1,43 @@
+Top 20 Frequent Words:
+de: 82485
+et: 49115
+je: 43861
+la: 36035
+le: 35233
+à: 31754
+pour: 28271
+que: 27276
+les: 26669
+en: 26528
+un: 25710
+pas: 25681
+a: 20348
+des: 19018
+une: 17772
+ne: 17083
+mon: 16413
+du: 15231
+est: 14063
+suis: 13704
+
+Top 20 Frequent Bigrams:
+je suis: 11457
+de la: 7366
+que je: 5073
+je ne: 4075
+de mon: 3558
+à la: 3419
+pas de: 3049
+suis satisfait: 2812
+plus de: 2543
+je n'ai: 2483
+du service: 2261
+et je: 2257
+satisfait du: 2256
+le service: 2129
+les prix: 2108
+en charge: 2093
+sur le: 1981
+a été: 1962
+alors que: 1928
+je recommande: 1896

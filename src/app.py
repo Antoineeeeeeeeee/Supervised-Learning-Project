@@ -4,6 +4,19 @@ import pickle
 import os
 import numpy as np
 
+# Try importing extra NLP libraries for new features
+try:
+    from gensim.models import Word2Vec
+    HAS_W2V = True
+except ImportError:
+    HAS_W2V = False
+
+try:
+    from transformers import pipeline
+    HAS_TRANSFORMERS = True
+except ImportError:
+    HAS_TRANSFORMERS = False
+
 st.set_page_config(page_title="Assurance Reviews NLP", layout="wide")
 
 st.title("Assurance Reviews NLP Application 🚀")
@@ -18,10 +31,35 @@ def load_models():
         with open(mod_path, "rb") as f:
             model = pickle.load(f)
         return vectorizer, model
-    except Exception as e:
+    except Exception:
         return None, None
 
+@st.cache_resource
+def load_w2v():
+    if not HAS_W2V: return None
+    path = os.path.join("data", "processed", "word2vec.model")
+    if os.path.exists(path):
+        return Word2Vec.load(path)
+    return None
+
+@st.cache_resource
+def load_pipelines():
+    if not HAS_TRANSFORMERS: return None, None
+    try:
+        qa_pipe = pipeline("question-answering", model="etalab-ia/camembert-base-squadFR-fquad-piaf", revision="main") 
+        sum_pipe = pipeline("summarization", model="plguillou/t5-base-fr-sum-cnndm")
+        return qa_pipe, sum_pipe
+    except:
+        try:
+            qa_pipe = pipeline("question-answering")
+            sum_pipe = pipeline("summarization")
+            return qa_pipe, sum_pipe
+        except:
+            return None, None
+
 vectorizer, model = load_models()
+w2v_model = load_w2v()
+qa_pipe, sum_pipe = load_pipelines()
 
 @st.cache_data
 def load_data():
@@ -34,7 +72,7 @@ def load_data():
 
 df = load_data()
 
-tab1, tab2 = st.tabs(["🔮 Prédiction de Sentiment", "📊 Analyse & Recherche d'Assureurs"])
+tab1, tab2, tab3, tab4 = st.tabs(["🔮 Sentiment", "📊 Analyse", "🧠 Recherche Sémantique", "🤖 RAG & Résumés"])
 
 with tab1:
     st.header("Tester l'analyse de sentiment")
@@ -70,7 +108,7 @@ with tab1:
             
             st.progress(float(np.max(probs)))
         else:
-            st.warning("Veuillez entrer du texte ou vérifier que le modèle est bien généré.")
+            st.warning("Erreur : Text vide ou modèle non chargé.")
 
 with tab2:
     st.header("Exploration et Recherche")
@@ -85,10 +123,67 @@ with tab2:
             avg_stars = filtered_df.groupby('assureur')['note'].mean().reset_index()
             st.bar_chart(avg_stars.set_index('assureur'))
         
-        st.write("### Recherche de Mots-clés (Information Retrieval)")
-        keyword = st.text_input("Mots-clés :")
+        st.write("### Recherche par mot-clé exact (Information Retrieval)")
+        keyword = st.text_input("Mot-clé exact :")
         if keyword:
             res = filtered_df[filtered_df['avis'].astype(str).str.contains(keyword, case=False, na=False)]
             st.dataframe(res[['assureur', 'note', 'avis']].head(50))
     else:
-        st.error("Dataset introuvable. Veuillez exécuter les scripts de préparation des données.")
+        st.error("Dataset introuvable.")
+
+with tab3:
+    st.header("Recherche Sémantique (Word2Vec)")
+    if w2v_model and not df.empty:
+        query = st.text_input("Recherchez un concept (ex: 'prix', 'remboursement') :")
+        if st.button("Chercher sémantiquement") and query:
+            if query in w2v_model.wv:
+                sims = w2v_model.wv.most_similar(query, topn=3)
+                sim_words = [query] + [w for w, _ in sims]
+                st.write(f"Mots sémantiquement liés trouvés : **{', '.join(sim_words)}**")
+                
+                # Filtrer les avis contenant l'un des mots
+                pattern = '|'.join(sim_words)
+                res = df[df['avis_clean'].astype(str).str.contains(pattern, case=False, na=False)]
+                st.write(f"{len(res)} avis trouvés :")
+                st.dataframe(res[['assureur', 'note', 'avis']].head(20))
+            else:
+                st.warning("Mot inconnu dans le vocabulaire Word2Vec.")
+    else:
+        st.warning("Modèle Word2Vec non chargé ou introuvable.")
+
+with tab4:
+    st.header("Fonctions Avancées : Résumé & QA (RAG)")
+    if HAS_TRANSFORMERS and not df.empty:
+        assureur_rag = st.selectbox("Sélectionnez un assureur pour analyser les avis :", df['assureur'].dropna().unique().tolist())
+        target_df = df[df['assureur'] == assureur_rag]
+        
+        st.subheader("📝 Résumé des avis")
+        if st.button("Générer un résumé des 10 derniers avis"):
+            texts = target_df['avis'].dropna().head(10).tolist()
+            combined = " ".join([str(t) for t in texts])[:1000] # truncate
+            if sum_pipe:
+                with st.spinner("Génération en cours..."):
+                    try:
+                        summary = sum_pipe(combined, max_length=150, min_length=30, do_sample=False)
+                        st.success(summary[0]['summary_text'])
+                    except Exception as e:
+                        st.error(f"Erreur lors de la génération: {e}")
+            else:
+                st.error("Pipeline summarization non disponible.")
+                
+        st.subheader("❓ Poser une question sur cet assureur (QA)")
+        question = st.text_input("Votre question (ex: 'Quels sont les problèmes ?') :")
+        if st.button("Demander"):
+            if qa_pipe and question:
+                texts = target_df['avis'].dropna().head(50).tolist() # contexte
+                context = " ".join([str(t) for t in texts])[:2000]
+                with st.spinner("Recherche de la réponse..."):
+                    try:
+                        ans = qa_pipe(question=question, context=context)
+                        st.success(f"Réponse: {ans['answer']} (Confiance: {ans['score']:.2f})")
+                    except Exception as e:
+                        st.error(f"Erreur QA: {e}")
+            else:
+                st.error("Pipeline QA non disponible ou question vide.")
+    else:
+        st.warning("Transformers non installé ou dataset vide.")

@@ -8,3 +8,8 @@ spacy
 gensim
 transformers
 tensorboard
+tensorflow
+pyspellchecker
+openpyxl
+torch
+tf-keras

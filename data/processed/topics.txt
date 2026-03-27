@@ -1,5 +1,5 @@
-Topic 1: me, on, par, depuis, mois, sans, même, sinistre, faire, contrat
-Topic 2: satisfait, service, prix, merci, qualité, bon, client, écoute, votre, rapport
+Topic 1: me, on, par, mois, depuis, sans, contrat, sinistre, faire, ans
+Topic 2: satisfait, service, prix, merci, bon, qualité, client, votre, rapport, écoute
 Topic 3: assurance, direct, recommande, olivier, chez, auto, voiture, bonne, véhicule, cher
-Topic 4: rapide, simple, efficace, site, pratique, facile, souscription, devis, ligne, utilisation
-Topic 5: ai, eu, été, était, jamais, téléphone, reçu, pu, personne, avais
+Topic 4: rapide, simple, efficace, site, pratique, facile, souscription, devis, ligne, recommande
+Topic 5: ai, eu, été, jamais, était, téléphone, pu, reçu, personne, merci

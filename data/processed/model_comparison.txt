@@ -1,25 +1,51 @@
 Baseline TF-IDF + Logistic Regression:
-Accuracy: 0.7476
+Accuracy: 0.7525
               precision    recall  f1-score   support
 
     negative       0.87      0.85      0.86      2171
-     neutral       0.27      0.36      0.31       682
-    positive       0.85      0.77      0.81      1968
+     neutral       0.28      0.37      0.32       682
+    positive       0.85      0.78      0.81      1968
 
     accuracy                           0.75      4821
-   macro avg       0.66      0.66      0.66      4821
+   macro avg       0.67      0.67      0.66      4821
 weighted avg       0.78      0.75      0.76      4821
 
 
 Transformer (nlptown/bert-base-multilingual-uncased-sentiment) - Zero-shot:
-Accuracy (on 200 sample): 0.7650
+Accuracy (on 200 sample): 0.7800
               precision    recall  f1-score   support
 
-    negative       0.84      0.89      0.86        98
-     neutral       0.36      0.14      0.20        37
-    positive       0.74      0.94      0.83        65
+    negative       0.85      0.91      0.88        98
+     neutral       0.43      0.16      0.24        37
+    positive       0.75      0.94      0.84        65
 
-    accuracy                           0.77       200
-   macro avg       0.65      0.65      0.63       200
-weighted avg       0.72      0.77      0.73       200
+    accuracy                           0.78       200
+   macro avg       0.68      0.67      0.65       200
+weighted avg       0.74      0.78      0.74       200
+
+
+Keras Basic Random Embedding Model:
+Accuracy: 0.7957
+              precision    recall  f1-score   support
+
+    negative       0.79      0.95      0.86      2171
+     neutral       0.34      0.05      0.09       682
+    positive       0.82      0.88      0.85      1968
+
+    accuracy                           0.80      4821
+   macro avg       0.65      0.63      0.60      4821
+weighted avg       0.74      0.80      0.75      4821
+
+
+Keras Pre-Trained (Word2Vec) Embedding Model:
+Accuracy: 0.7957
+              precision    recall  f1-score   support
+
+    negative       0.82      0.92      0.87      2171
+     neutral       0.50      0.00      0.01       682
+    positive       0.77      0.93      0.84      1968
+
+    accuracy                           0.80      4821
+   macro avg       0.70      0.62      0.57      4821
+weighted avg       0.76      0.80      0.74      4821
 

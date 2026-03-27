@@ -84,6 +84,28 @@ if HAS_SPELL:
 else:
     df['avis_clean'] = df['avis_norm']
 
+print("Extracting frequent words and bigrams...")
+all_clean_words = []
+for text in df['avis_clean'].dropna():
+    all_clean_words.extend(str(text).split())
+
+from collections import Counter
+freq_words = Counter(all_clean_words).most_common(20)
+
+bigram_list = list(zip(all_clean_words, all_clean_words[1:]))
+freq_bigrams = Counter(bigram_list).most_common(20)
+
+freq_path = os.path.join("data", "processed", "frequent_words.txt")
+os.makedirs(os.path.dirname(freq_path), exist_ok=True)
+with open(freq_path, "w", encoding="utf-8") as f:
+    f.write("Top 20 Frequent Words:\n")
+    for w, c in freq_words:
+        f.write(f"{w}: {c}\n")
+    f.write("\nTop 20 Frequent Bigrams:\n")
+    for b, c in freq_bigrams:
+        f.write(f"{' '.join(b)}: {c}\n")
+print(f"Saved frequent words and bigrams to {freq_path}")
+
 out_path = os.path.join("data", "processed", "cleaned_dataset.csv")
 os.makedirs(os.path.dirname(out_path), exist_ok=True)
 df.to_csv(out_path, index=False)

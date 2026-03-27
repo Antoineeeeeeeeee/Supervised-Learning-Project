@@ -1,0 +1,26 @@
+=== Error Analysis ===
+
+Total Errors in Test Set: 1193 out of 4821
+
+--- Actual Positive, Predicted Negative (63) ---
+Text: je suis satisfait du service. j'ai pu trouver une assurance qui rentre dans mes moyens financiers en tout risque. etant jeune conducteur il est difficile de s'assurer sans que cela nous coûte trop cher.
+
+Text: bonjour, je vous déconseille de souscrire chez eux, la 1ère année le prix est correct, la seconde j'ai reçu (le 04/02/2021) une très forte augmentation, donc par rapport à ça je décide de résilier le contrat immédiatement à compter du 01/03/2021 (date d'échéance du contrat) par courrier recommandé ar, le 17/02/2021 je reçois une confirmation de résiliation par mail, je me dit que c'est bon le nécessaire est fait, à ma mauvaise surprise, aujourd'hui 05/03/2021 je suis prélevé de la cotisation annuel pour l'année 01/03/21 au 28/02/2022 malgré la résiliation du contrat (si j'avais su j'aurais bloqué tout prélèvement) en gros je ne suis plus assuré chez eux mais je dois payer l'année !? pour l'instant je suis dans l'impasse, j'ai tenté de les contacter par téléphone mais ils ne répondent pas (une erreur s'est produite veuillez réessayer) cordialement.
+
+Text: une rente survie handicape
+
+Text: assure pendant une quinzaine d’année sans sinistre à la macif , je change de voiture et on m’augmente ma prime de 100 % en me disant que c’est une voiture de luxe « c’est une porsche » donc j’ai résilié mon contrat , pas correct de ce coup là .
+
+Text: je suis satisfait des services et la disponibilité des agents.suite à mon sinistre dégâts des eaux. le centre de gestion situé dans le sud ouest est compétent et sympathique. le centre de gestion en charge de mon agression laisse à désirer. j'attends toujours la réponse de l'agent en charge de mon dossier après plusieurs lettres recommandées et appels. de grenoble. pour finir je laisse tomber. je demanderai à une autre assurance dont pacifica de gérer le dossier.
+
+--- Actual Negative, Predicted Positive (40) ---
+Text: suis. satisfait du service et les prix attractifs et espérons qu en cas de problème je serais aussi satisfait et que les prix n augmente pas et le bonus 50 reste à vie je l espère bonne continuation à vous merci
+
+Text: j'ai voulu souscrire une d'assurance auto macif, mais l'interlocutrice que j'ai eu au téléphone a été si odieuse, que cela donne à réfléchir à deux fois quant à l'avenir en cas de problème ! et en lisant les commentaires, ça me conforte dans mon hésitation. je fuis donc cette assurance.
+
+Text: je suis satisfait du service. les sont peu élevés. la rapidité de souscription est satisfaisante . le temps d’attente au téléphone est relativement court.
+
+Text: le secret d'une bonne assurance : créer un climat de confiance avec son assureur réactif. tous les mots sont important, si vous n'avez pas tous les mots, changez d'assureur !
+
+Text: l'interface téléphonique du service client est assez intuitive. mon interlocutrice ( erika ) à été très compréhensive et a su m'expliquer les démarches a suivre avec clarté. je la remercie pour cela
+
