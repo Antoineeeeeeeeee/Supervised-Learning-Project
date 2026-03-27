@@ -1,101 +1,113 @@
 # Supervised-Learning-Project (NLP Project 2)
 
-Ce projet est dédié au traitement du langage naturel (NLP) appliqué à des avis clients du domaine de l'assurance. Il propose un pipeline complet de bout en bout : nettoyage des données, exploration non supervisée (Topic Modeling via NMF, plongements de mots Word2Vec et GloVe), ainsi qu'une approche supervisée pour l'analyse de sentiment (modèles TF-IDF classiques, Keras CNN/FFN avec réseaux de neurones, et analyse "Zero-Shot" via Transformers HuggingFace). L'ensemble est mis en valeur dans une application interactive web (*Streamlit*) permettant aux utilisateurs d'analyser les sentiments, générer des résumés d'avis par intelligence artificielle et interroger les données via un système Question-Réponse (RAG).
+Ce projet est dédié au traitement du langage naturel (NLP) appliqué à des avis clients du domaine de l'assurance. Il propose un pipeline complet de bout en bout : nettoyage des données, exploration non supervisée (Topic Modeling via NMF, plongements de mots Word2Vec et GloVe), une approche supervisée pour l'analyse de sentiment (TF-IDF, Keras, Transformers HuggingFace), ainsi qu'une application web interactive (Streamlit) pour la prédiction, la recherche sémantique, la détection de thèmes, les résumés NLP et le Question-Answering (RAG).
 
 L'entraînement des modèles a été effectué sur un dataset français, merci d'utiliser des avis clients en français pour faciliter l'utilisation.
 
-Welcome to the Assurance Reviews NLP Project! This document covers everything a new developer or evaluator needs to know to set up the environment, install the correct dependencies, and run the complete NLP pipeline and Streamlit application from scratch.
+---
 
-## 1. Prerequisites & Dependencies
+## 1. Dépendances & Bibliothèques
 
-You will need Python 3.9+ installed on your machine.
-The project relies on the following key Python libraries (`requirements.txt`):
-* **Transformers (HuggingFace)**: Zero-shot classification, Summarization, QA / RAG.
-* **TensorFlow & Keras**: Deep learning sentiment models with embedding layers.
-* **Gensim**: Word2Vec and GloVe embeddings.
-* **Scikit-Learn**: Classic ML baselines (TF-IDF, Logistic Regression) and Topic Modeling (NMF).
-* **Streamlit**: Web application frontend.
-* **Data & Text Processing**: Pandas, Numpy, NLTK, pyspellchecker, openpyxl.
+Python 3.9+ requis. Bibliothèques principales :
 
-## 2. Environment Setup
+| Bibliothèque | Usage |
+|---|---|
+| `transformers` (HuggingFace) | Zero-shot, Résumé (T5), QA (CamemBERT) |
+| `tensorflow` / `tf-keras` | Modèles deep learning avec Embedding layer |
+| `gensim` | Word2Vec + GloVe (downloader API) |
+| `scikit-learn` | TF-IDF, Logistic Regression, NMF Topic Modeling |
+| `streamlit` | Application web interactive |
+| `deep-translator` | Traduction FR → EN (colonne `avis_en`) |
+| `sentencepiece` | Tokenizer T5 (requis par le modèle de résumé) |
+| `pyspellchecker` | Correction orthographique |
+| `pandas`, `numpy`, `matplotlib` | Traitement des données & visualisation |
+| `openpyxl` | Lecture des fichiers `.xlsx` sources |
+| `torch` | Backend PyTorch pour les modèles HuggingFace |
+| `tensorboard` | Visualisation des embeddings et des courbes d'entraînement |
 
-It is highly recommended to use a virtual environment (`.venv`) to isolate dependencies.
+---
 
-1. **Open a terminal** inside this project folder:
-   ```bash
-   cd Supervised-Learning-Project
-   ```
-2. **Create the virtual environment** (if not already created):
-   ```bash
-   python -m venv .venv
-   ```
-3. **Activate the environment**:
-   * **Windows (PowerShell)**: `.\.venv\Scripts\Activate.ps1`
-   * **Windows (Command Prompt)**: `.\.venv\Scripts\activate.bat`
-   * **Mac/Linux**: `source .venv/bin/activate`
-4. **Install all dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+## 2. Installation de l'environnement
 
-## 3. Running the Machine Learning Pipeline
-
-The project is structured into sequential scripts. You must run them in order so that the data is cleaned, models are trained, and checkpoints are properly saved into `data/processed/`.
-
-Run the following commands in your activated terminal:
-
-### Phase 1: Data Preparation & Cleaning
 ```bash
-python src/01_explore_data.py
-python src/02_build_dataset.py
-python src/03_data_cleaning.py
-```
-*(This extracts frequent n-grams, applies fast spell checking, and normalizes the texts).*
+# 1. Créer le venv (si pas déjà fait)
+python -m venv .venv
 
-### Phase 2: Unsupervised Learning & Word Embeddings
+# 2. Activer le venv
+# Windows PowerShell :
+.\.venv\Scripts\Activate.ps1
+# Windows CMD :
+.\.venv\Scripts\activate.bat
+# Mac/Linux :
+source .venv/bin/activate
+
+# 3. Installer toutes les dépendances
+pip install -r requirements.txt
+```
+
+---
+
+## 3. Pipeline complet — ordre d'exécution
+
+### Phase 1 — Préparation & Nettoyage des données
 ```bash
-python src/04_topic_modeling.py
-python src/05_word_embeddings.py
-python src/05b_glove_embeddings.py
+python src/01_explore_data.py      # Exploration initiale des fichiers .xlsx
+python src/02_build_dataset.py     # Fusion des fichiers en full_dataset.csv
+python src/03_data_cleaning.py     # Normalisation, correction orthographique, mots fréquents & bigrammes
 ```
-*(This performs Topic Modeling (NMF), Word2Vec training, fetches GloVe embeddings, and generates TSV/PCA viz).*
 
-### Phase 3: Supervised Deep Learning Models
+### Phase 2 — Résumé & Traduction
 ```bash
-python src/06_supervised_learning_baseline.py
-python src/07_hf_transformer_model.py
-python src/08_keras_basic_embedding.py
-python src/09_keras_pretrained_embedding.py
+python src/summary_translation.py  # Génère insurer_summaries.csv + colonne avis_en (FR→EN) dans le dataset
 ```
-*(This trains the TF-IDF Baseline, evaluates a zero-shot Transformer, and builds & logs Keras CNN/FFN models to TensorBoard).*
+> ⚠️ Cette étape nécessite `sentencepiece` et `deep-translator`. Elle peut prendre plusieurs minutes (téléchargement du modèle T5 si absent du cache).
 
-### Phase 4: Error Analysis & Category Prediction
+### Phase 3 — Modélisation non-supervisée & Embeddings
 ```bash
-python src/10_error_analysis.py
-python src/11_category_stars_prediction.py
+python src/04_topic_modeling.py       # Topic Modeling NMF → topics.txt
+python src/05_word_embeddings.py      # Word2Vec → word2vec.model + PCA + export TensorBoard
+python src/05b_glove_embeddings.py    # GloVe (via gensim downloader) → glove_pca.png + export TensorBoard
 ```
-*(This analyzes False Positives/Negatives and extracts themes via zero-shot classification).*
 
-## 4. Visualizing Embeddings and Results
+### Phase 4 — Apprentissage supervisé
+```bash
+python src/06_supervised_learning_baseline.py  # TF-IDF + Logistic Regression → .pkl
+python src/07_hf_transformer_model.py          # Zero-shot BERT (nlptown) → évaluation sur échantillon
+python src/08_keras_basic_embedding.py         # Keras Embedding aléatoire + TensorBoard → .keras
+python src/09_keras_pretrained_embedding.py    # Keras Embedding Word2Vec pré-entraîné + TensorBoard → .keras
+```
 
-To interactively explore the word embeddings generated by the pipeline:
-1. Run TensorBoard:
-   ```bash
-   tensorboard --logdir logs/fit
-   ```
-   *(Or target `data/processed` for embeddings alone)*
-2. Open your browser at `http://localhost:6006`
+### Phase 5 — Analyse & Prédiction de thèmes
+```bash
+python src/10_error_analysis.py                # Analyse des erreurs (FP/FN) → error_analysis.txt
+python src/11_category_stars_prediction.py     # Détection de thèmes Zero-Shot → sample_categories.csv
+```
 
-## 5. Launching the App
+---
 
-Once all the `.pkl`, `.csv`, and `.keras` models are generated by the pipeline in `data/processed/`, you can launch the Streamlit interface:
+## 4. Visualisation TensorBoard
 
+```bash
+tensorboard --logdir logs/fit
+# Ouvrir : http://localhost:6006
+```
+Les fichiers `.tsv` de Word2Vec et GloVe peuvent aussi être chargés sur [projector.tensorflow.org](https://projector.tensorflow.org).
+
+---
+
+## 5. Lancer l'application Streamlit
+
+Une fois les étapes ci-dessus exécutées :
 ```bash
 streamlit run src/app.py
 ```
 
-### App Features:
-* **Sentiment**: Test the baseline model interactively on custom assurance reviews, displaying word-impact explainability.
-* **Analyse**: Filter insurers and view basic ratings.
-* **Recherche Sémantique**: Query the Word2Vec model (e.g., "remboursement") instantly filtering dynamically related themes.
-* **RAG & Résumés**: Choose an insurer to synthesize a 10-review abstract paragraph of their service, or query the pipeline using Question-Answering.
+### Fonctionnalités de l'app (5 onglets) :
+
+| Onglet | Fonctionnalité |
+|---|---|
+| **Sentiment & Explication** | Prédiction TF-IDF + poids des mots + comparaison de tous les modèles |
+| **Analyse des assureurs** | Moyenne des notes, distribution des sentiments, résumés NLP par assureur, recherche par mot-clé |
+| **Recherche Sémantique** | Requête Word2Vec avec mots similaires + filtrage des avis correspondants |
+| **Détection de catégories** | Classification Zero-Shot live (tarifs, service client, remboursement, etc.) |
+| **Résumé & QA (RAG)** | Résumé automatique des avis d'un assureur + Question-Réponse extractif sur les avis |

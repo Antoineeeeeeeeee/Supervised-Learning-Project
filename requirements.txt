@@ -13,3 +13,5 @@ pyspellchecker
 openpyxl
 torch
 tf-keras
+deep-translator
+sentencepiece
