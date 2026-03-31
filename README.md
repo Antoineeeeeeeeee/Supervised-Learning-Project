@@ -1,113 +1,113 @@
 # Supervised-Learning-Project (NLP Project 2)
 
-Ce projet est dédié au traitement du langage naturel (NLP) appliqué à des avis clients du domaine de l'assurance. Il propose un pipeline complet de bout en bout : nettoyage des données, exploration non supervisée (Topic Modeling via NMF, plongements de mots Word2Vec et GloVe), une approche supervisée pour l'analyse de sentiment (TF-IDF, Keras, Transformers HuggingFace), ainsi qu'une application web interactive (Streamlit) pour la prédiction, la recherche sémantique, la détection de thèmes, les résumés NLP et le Question-Answering (RAG).
+This project applies Natural Language Processing (NLP) to French customer reviews in the insurance sector. It implements a complete end-to-end pipeline: data cleaning, unsupervised exploration (NMF Topic Modeling, Word2Vec and GloVe embeddings), supervised sentiment analysis (TF-IDF, Keras, HuggingFace Transformers), and an interactive Streamlit web application for prediction, semantic search, topic detection, NLP summarization and Question-Answering (RAG).
 
-L'entraînement des modèles a été effectué sur un dataset français, merci d'utiliser des avis clients en français pour faciliter l'utilisation.
+All models were trained on a French-language dataset — please use French customer reviews for best results.
 
 ---
 
-## 1. Dépendances & Bibliothèques
+## 1. Dependencies & Libraries
 
-Python 3.9+ requis. Bibliothèques principales :
+Python 3.9+ required. Main libraries:
 
-| Bibliothèque | Usage |
+| Library | Usage |
 |---|---|
-| `transformers` (HuggingFace) | Zero-shot, Résumé (T5), QA (CamemBERT) |
-| `tensorflow` / `tf-keras` | Modèles deep learning avec Embedding layer |
+| `transformers` (HuggingFace) | Zero-shot classification, Summarization (T5), QA (CamemBERT) |
+| `tensorflow` / `tf-keras` | Deep learning models with Embedding layers |
 | `gensim` | Word2Vec + GloVe (downloader API) |
 | `scikit-learn` | TF-IDF, Logistic Regression, NMF Topic Modeling |
-| `streamlit` | Application web interactive |
-| `deep-translator` | Traduction FR → EN (colonne `avis_en`) |
-| `sentencepiece` | Tokenizer T5 (requis par le modèle de résumé) |
-| `pyspellchecker` | Correction orthographique |
-| `pandas`, `numpy`, `matplotlib` | Traitement des données & visualisation |
-| `openpyxl` | Lecture des fichiers `.xlsx` sources |
-| `torch` | Backend PyTorch pour les modèles HuggingFace |
-| `tensorboard` | Visualisation des embeddings et des courbes d'entraînement |
+| `streamlit` | Interactive web application |
+| `deep-translator` | Translation FR → EN (`avis_en` column) |
+| `sentencepiece` | T5 tokenizer (required by the summarization model) |
+| `pyspellchecker` | Spell correction |
+| `pandas`, `numpy`, `matplotlib` | Data processing & visualization |
+| `openpyxl` | Reading source `.xlsx` files |
+| `torch` | PyTorch backend for HuggingFace models |
+| `tensorboard` | Embedding visualization and training curve monitoring |
 
 ---
 
-## 2. Installation de l'environnement
+## 2. Environment Setup
 
 ```bash
-# 1. Créer le venv (si pas déjà fait)
+# 1. Create the virtual environment (if not already done)
 python -m venv .venv
 
-# 2. Activer le venv
-# Windows PowerShell :
+# 2. Activate the venv
+# Windows PowerShell:
 .\.venv\Scripts\Activate.ps1
-# Windows CMD :
+# Windows CMD:
 .\.venv\Scripts\activate.bat
-# Mac/Linux :
+# Mac/Linux:
 source .venv/bin/activate
 
-# 3. Installer toutes les dépendances
+# 3. Install all dependencies
 pip install -r requirements.txt
 ```
 
 ---
 
-## 3. Pipeline complet — ordre d'exécution
+## 3. Full Pipeline — Execution Order
 
-### Phase 1 — Préparation & Nettoyage des données
+### Phase 1 — Data Preparation & Cleaning
 ```bash
-python src/01_explore_data.py      # Exploration initiale des fichiers .xlsx
-python src/02_build_dataset.py     # Fusion des fichiers en full_dataset.csv
-python src/03_data_cleaning.py     # Normalisation, correction orthographique, mots fréquents & bigrammes
+python src/01_explore_data.py      # Initial exploration of .xlsx files
+python src/02_build_dataset.py     # Merge files into full_dataset.csv
+python src/03_data_cleaning.py     # Normalization, spell correction, frequent words & bigrams
 ```
 
-### Phase 2 — Résumé & Traduction
+### Phase 2 — Summarization & Translation
 ```bash
-python src/summary_translation.py  # Génère insurer_summaries.csv + colonne avis_en (FR→EN) dans le dataset
+python src/summary_translation.py  # Generates insurer_summaries.csv + avis_en column (FR→EN)
 ```
-> ⚠️ Cette étape nécessite `sentencepiece` et `deep-translator`. Elle peut prendre plusieurs minutes (téléchargement du modèle T5 si absent du cache).
+> ⚠️ This step requires `sentencepiece` and `deep-translator`. It may take several minutes (downloads T5 model if not cached).
 
-### Phase 3 — Modélisation non-supervisée & Embeddings
+### Phase 3 — Unsupervised Modeling & Embeddings
 ```bash
-python src/04_topic_modeling.py       # Topic Modeling NMF → topics.txt
-python src/05_word_embeddings.py      # Word2Vec → word2vec.model + PCA + export TensorBoard
-python src/05b_glove_embeddings.py    # GloVe (via gensim downloader) → glove_pca.png + export TensorBoard
+python src/04_topic_modeling.py       # NMF Topic Modeling → topics.txt
+python src/05_word_embeddings.py      # Word2Vec → word2vec.model + PCA + TensorBoard export
+python src/05b_glove_embeddings.py    # GloVe (via gensim downloader) → glove_pca.png + TensorBoard export
 ```
 
-### Phase 4 — Apprentissage supervisé
+### Phase 4 — Supervised Learning
 ```bash
 python src/06_supervised_learning_baseline.py  # TF-IDF + Logistic Regression → .pkl
-python src/07_hf_transformer_model.py          # Zero-shot BERT (nlptown) → évaluation sur échantillon
-python src/08_keras_basic_embedding.py         # Keras Embedding aléatoire + TensorBoard → .keras
-python src/09_keras_pretrained_embedding.py    # Keras Embedding Word2Vec pré-entraîné + TensorBoard → .keras
+python src/07_hf_transformer_model.py          # Zero-shot BERT (nlptown) → evaluation on sample
+python src/08_keras_basic_embedding.py         # Keras random Embedding + TensorBoard → .keras
+python src/09_keras_pretrained_embedding.py    # Keras Word2Vec pre-trained Embedding + TensorBoard → .keras
 ```
 
-### Phase 5 — Analyse & Prédiction de thèmes
+### Phase 5 — Analysis & Topic Prediction
 ```bash
-python src/10_error_analysis.py                # Analyse des erreurs (FP/FN) → error_analysis.txt
-python src/11_category_stars_prediction.py     # Détection de thèmes Zero-Shot → sample_categories.csv
+python src/10_error_analysis.py                # Error analysis (FP/FN) → error_analysis.txt
+python src/11_category_stars_prediction.py     # Zero-Shot topic detection → sample_categories.csv
 ```
 
 ---
 
-## 4. Visualisation TensorBoard
+## 4. TensorBoard Visualization
 
 ```bash
 tensorboard --logdir logs/fit
-# Ouvrir : http://localhost:6006
+# Open: http://localhost:6006
 ```
-Les fichiers `.tsv` de Word2Vec et GloVe peuvent aussi être chargés sur [projector.tensorflow.org](https://projector.tensorflow.org).
+Word2Vec and GloVe `.tsv` files can also be loaded on [projector.tensorflow.org](https://projector.tensorflow.org).
 
 ---
 
-## 5. Lancer l'application Streamlit
+## 5. Launch the Streamlit App
 
-Une fois les étapes ci-dessus exécutées :
+Once all pipeline steps have been run:
 ```bash
 streamlit run src/app.py
 ```
 
-### Fonctionnalités de l'app (5 onglets) :
+### App Features (5 tabs):
 
-| Onglet | Fonctionnalité |
+| Tab | Feature |
 |---|---|
-| **Sentiment & Explication** | Prédiction TF-IDF + poids des mots + comparaison de tous les modèles |
-| **Analyse des assureurs** | Moyenne des notes, distribution des sentiments, résumés NLP par assureur, recherche par mot-clé |
-| **Recherche Sémantique** | Requête Word2Vec avec mots similaires + filtrage des avis correspondants |
-| **Détection de catégories** | Classification Zero-Shot live (tarifs, service client, remboursement, etc.) |
-| **Résumé & QA (RAG)** | Résumé automatique des avis d'un assureur + Question-Réponse extractif sur les avis |
+| **Sentiment & Explanation** | TF-IDF prediction + word importance + comparison of all 4 models |
+| **Insurer Analysis** | Average rating per insurer, sentiment distribution, NLP summaries, keyword search |
+| **Semantic Search** | Word2Vec query with similar words + filtering of matching reviews |
+| **Category Detection** | Live Zero-Shot classification (pricing, customer service, reimbursement, etc.) |
+| **Summary & QA (RAG)** | Automatic summary of an insurer's reviews + extractive Question-Answering |

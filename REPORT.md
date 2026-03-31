@@ -1,92 +1,92 @@
-# Rapport Technique — Projet NLP Supervisé
-### Analyse des avis clients dans le secteur de l'assurance
+# Technical Report — Supervised NLP Project
+### Customer Review Analysis in the Insurance Sector
 
 ---
 
-## 1. Contexte et Données
+## 1. Context & Data
 
 ### Dataset
-Le dataset est composé d'avis clients en français sur des assureurs (assurance auto, santé, habitation). Les données brutes sont contenues dans plusieurs fichiers `.xlsx` fusionnés en un CSV unique (`data/raw/full_dataset.csv`). Chaque ligne contient :
-- `assureur` : le nom de la compagnie
-- `avis` : le texte de l'avis (en français)
-- `note` : la note attribuée (1 à 5 étoiles)
+The dataset consists of French-language customer reviews about insurance companies (car, health, home insurance). The raw data is contained in several `.xlsx` files merged into a single CSV (`data/raw/full_dataset.csv`). Each row contains:
+- `assureur`: the company name
+- `avis`: the review text (in French)
+- `note`: the rating given (1 to 5 stars)
 
 ---
 
-## 2. Exploration & Nettoyage des Données
+## 2. Data Exploration & Cleaning
 
-### Choix techniques (`03_data_cleaning.py`)
-- **Normalisation** : mise en minuscules, suppression des retours à la ligne et espaces multiples.
-- **Correction orthographique** : implémentée via `pyspellchecker` avec une approche en cache optimisée (top 2000 mots inconnus identifiés corpus-wide, corrigés une seule fois). Cette approche réduit le temps d'exécution de plusieurs heures à quelques minutes.
-- **Étiquetage du sentiment** : la colonne `sentiment` est déduite de la note :
-  - Note ≥ 4 → `positive`
-  - Note ≤ 2 → `negative`
-  - Note = 3 → `neutral`
+### Technical choices (`03_data_cleaning.py`)
+- **Normalization**: lowercasing, removal of line breaks and extra whitespace.
+- **Spell correction**: implemented via `pyspellchecker` using a cache-optimized approach (top 2000 unknown words identified corpus-wide, corrected once). This reduces execution time from several hours to a few minutes.
+- **Sentiment labeling**: the `sentiment` column is derived from the rating:
+  - Rating ≥ 4 → `positive`
+  - Rating ≤ 2 → `negative`
+  - Rating = 3 → `neutral`
 
-### Mots fréquents et bigrammes
-Les 20 mots les plus fréquents du corpus (après nettoyage) reflètent la structure grammaticale du français. Les bigrammes sont plus informatifs et révèlent les patterns de satisfaction :
+### Frequent words and bigrams
+The 20 most frequent words in the corpus (after cleaning) reflect French grammatical structure. Bigrams are more informative and reveal satisfaction patterns:
 
-| Bigramme | Occurrences | Interprétation |
+| Bigram | Occurrences | Interpretation |
 |---|---|---|
-| `je suis` | 11 457 | Début de prise de position |
-| `suis satisfait` | 2 812 | Signal fort de satisfaction |
-| `le service` | 2 129 | Référence fréquente au service client |
-| `les prix` | 2 108 | Sujet sensible des tarifs |
-| `je recommande` | 1 896 | Recommandation explicite |
-| `en charge` | 2 093 | Gestion des sinistres / dossiers |
+| `je suis` | 11,457 | Beginning of a stance expression |
+| `suis satisfait` | 2,812 | Strong satisfaction signal |
+| `le service` | 2,129 | Frequent reference to customer service |
+| `les prix` | 2,108 | Sensitive topic of pricing |
+| `je recommande` | 1,896 | Explicit recommendation |
+| `en charge` | 2,093 | Claims / file management |
 
-**Conclusion** : Le corpus tourne autour de 3 axes principaux — satisfaction globale, prix/tarifs, et service client/sinistres. Cela correspond parfaitement aux catégories Zero-Shot définies dans la tâche de détection de thèmes.
+**Conclusion**: The corpus revolves around 3 main axes — overall satisfaction, pricing, and customer service/claims. This matches perfectly the Zero-Shot categories defined in the topic detection task.
 
 ---
 
 ## 3. Topic Modeling (`04_topic_modeling.py`)
 
-### Méthode : NMF (Non-negative Matrix Factorization)
-Appliquée sur une matrice TF-IDF (max 1000 features, stop words français), avec 5 composantes.
+### Method: NMF (Non-negative Matrix Factorization)
+Applied on a TF-IDF matrix (max 1000 features, French stop words), with 5 components.
 
-### Résultats :
+### Results:
 
-| Topic | Mots clés | Interprétation |
+| Topic | Keywords | Interpretation |
 |---|---|---|
-| **Topic 1** | sinistre, contrat, mois, depuis, sans | Gestion des sinistres / litiges |
-| **Topic 2** | satisfait, prix, service, qualité, client | Satisfaction et rapport qualité-prix |
-| **Topic 3** | direct, auto, voiture, véhicule, cher | Assurance automobile |
-| **Topic 4** | rapide, simple, efficace, site, souscription | Expérience digitale / souscription en ligne |
-| **Topic 5** | téléphone, personne, reçu, jamais | Difficultés à joindre le service client |
+| **Topic 1** | sinistre, contrat, mois, depuis, sans | Claims management / disputes |
+| **Topic 2** | satisfait, prix, service, qualité, client | Satisfaction and value for money |
+| **Topic 3** | direct, auto, voiture, véhicule, cher | Car insurance |
+| **Topic 4** | rapide, simple, efficace, site, souscription | Digital experience / online sign-up |
+| **Topic 5** | téléphone, personne, reçu, jamais | Difficulty reaching customer service |
 
-**Interprétation** : Les 5 topics correspondent à des axes bien identifiés dans l'assurance : sinistres, satisfaction, automobile, digital et service client.
+**Interpretation**: The 5 topics correspond to well-identified axes in the insurance domain: claims, satisfaction, automobile, digital, and customer service.
 
 ---
 
 ## 4. Word Embeddings
 
 ### Word2Vec (`05_word_embeddings.py`)
-- **Architecture** : Skip-gram, 100 dimensions, fenêtre de 5, min_count=5
-- **Résultats de similarité** :
-  - Mots proches de `prix` : tarif, cher, augmentation, cotisation → cohérence sémantique sur la thématique tarifaire
-  - Distance euclidienne entre `prix` et `tarif` calculée et sauvegardée
-- **Visualisation** : PCA 2D des 200 premiers mots (`word2vec_pca.png`) + export TensorBoard (tensors.tsv / metadata.tsv pour 5000 mots)
+- **Architecture**: Skip-gram, 100 dimensions, window=5, min_count=5
+- **Similarity results**:
+  - Words close to `prix`: tarif, cher, augmentation, cotisation → semantic coherence on pricing topic
+  - Euclidean distance between `prix` and `tarif` computed and saved
+- **Visualization**: 2D PCA of the top 200 words (`word2vec_pca.png`) + TensorBoard export (tensors.tsv / metadata.tsv for 5000 words)
 
 ### GloVe (`05b_glove_embeddings.py`)
-- **Modèle** : `glove-twitter-25` chargé via `gensim.downloader` (104.8 MB)
-- **Résultats de similarité** (en anglais) :
+- **Model**: `glove-twitter-25` loaded via `gensim.downloader` (104.8 MB)
+- **Similarity results** (in English):
   - `price` → card, stock, includes, discount, limited
   - `insurance` → exchange, mortgage, transportation, banking
-- **Visualisation** : PCA 2D des mots 100-300 (`glove_pca.png`) + export TensorBoard (glove_tensors.tsv / glove_metadata.tsv)
+- **Visualization**: 2D PCA of words 100–300 (`glove_pca.png`) + TensorBoard export (glove_tensors.tsv / glove_metadata.tsv)
 
-**Comparaison W2V vs GloVe** : Word2Vec entraîné sur le corpus français est plus pertinent thématiquement (il capte `prix`, `remboursement`, etc. dans un contexte assurance). GloVe généraliste pré-entraîné sur Twitter offre des similarités moins spécialisées mais une couverture de vocabulaire plus large.
+**W2V vs GloVe comparison**: Word2Vec trained on the French corpus is more thematically relevant (captures `prix`, `remboursement`, etc. in an insurance context). The pre-trained GloVe model on Twitter offers less specialized similarities but broader vocabulary coverage.
 
 ---
 
-## 5. Apprentissage Supervisé — Analyse de Sentiment
+## 5. Supervised Learning — Sentiment Analysis
 
-### Tâche : Classification 3 classes (positive / neutral / negative)
+### Task: 3-class classification (positive / neutral / negative)
 
-### 5.1 Baseline TF-IDF + Régression Logistique (`06_supervised_learning_baseline.py`)
-- **Vectorisation** : TF-IDF, max 5000 features, pondération class_weight='balanced'
-- **Split** : 80/20, random_state=42
+### 5.1 Baseline TF-IDF + Logistic Regression (`06_supervised_learning_baseline.py`)
+- **Vectorization**: TF-IDF, max 5000 features, class_weight='balanced'
+- **Split**: 80/20, random_state=42
 
-**Résultats :**
+**Results:**
 ```
 Accuracy : 0.7525
                precision  recall  f1-score  support
@@ -94,124 +94,124 @@ Accuracy : 0.7525
    neutral       0.28      0.37     0.32      682
   positive       0.85      0.78     0.81     1968
 ```
-**Analyse** : La classe neutre est très difficile à prédire (f1=0.32). Cela s'explique par sa définition (note=3, souvent ambiguë) et son faible nombre d'exemples (682 vs ~2000 pour les autres classes).
+**Analysis**: The neutral class is very hard to predict (f1=0.32). This is explained by its ambiguous definition (rating=3) and lower sample count (682 vs ~2000 for the other classes).
 
 ---
 
-### 5.2 Transformers Zero-Shot (`07_hf_transformer_model.py`)
-- **Modèle** : `nlptown/bert-base-multilingual-uncased-sentiment` (BERT multilingue, prédit 1-5 étoiles, converti en 3 classes)
-- **Évaluation** : 200 échantillons (contrainte CPU)
+### 5.2 Zero-Shot Transformers (`07_hf_transformer_model.py`)
+- **Model**: `nlptown/bert-base-multilingual-uncased-sentiment` (multilingual BERT, predicts 1–5 stars, converted to 3 classes)
+- **Evaluation**: 200 samples (CPU constraint)
 
-**Résultats :**
+**Results:**
 ```
-Accuracy : 0.7800 (sur 200 samples)
+Accuracy : 0.7800 (on 200 samples)
   negative : f1 = 0.88   positive : f1 = 0.84   neutral : f1 = 0.24
 ```
-**Analyse** : Performance comparable à la baseline TF-IDF, légèrement meilleure sur l'ensemble, mais la classe neutre reste problématique (f1=0.24). Le modèle "voit" les étoiles directement, ce qui est un avantage conceptuel.
+**Analysis**: Comparable performance to the TF-IDF baseline, slightly better overall, but the neutral class remains problematic (f1=0.24). The model "sees" the stars directly, which is a conceptual advantage.
 
 ---
 
-### 5.3 Réseau de neurones — Embedding aléatoire (`08_keras_basic_embedding.py`)
-- **Architecture** : `Embedding(5000, 50)` → `GlobalAveragePooling1D` → `Dense(24, relu)` → `Dropout(0.5)` → `Dense(3, softmax)`
-- **Entraînement** : 10 epochs, Adam, sparse_categorical_crossentropy
-- **TensorBoard** : logs sauvegardés dans `logs/fit/basic_embedding_*`
+### 5.3 Neural Network — Random Embedding (`08_keras_basic_embedding.py`)
+- **Architecture**: `Embedding(5000, 50)` → `GlobalAveragePooling1D` → `Dense(24, relu)` → `Dropout(0.5)` → `Dense(3, softmax)`
+- **Training**: 10 epochs, Adam, sparse_categorical_crossentropy
+- **TensorBoard**: logs saved in `logs/fit/basic_embedding_*`
 
-**Résultats :**
+**Results:**
 ```
 Accuracy : 0.7957
   negative : f1 = 0.86   positive : f1 = 0.85   neutral : f1 = 0.09
 ```
-**Analyse** : Meilleure précision globale (+4pp vs baseline), mais la classe neutre s'effondre (f1=0.09). Le modèle a convergé sur les deux classes dominantes.
+**Analysis**: Best overall accuracy (+4pp vs baseline), but the neutral class collapses (f1=0.09). The model converged on the two dominant classes.
 
 ---
 
-### 5.4 Réseau de neurones — Pré-entraîné Word2Vec (`09_keras_pretrained_embedding.py`)
-- **Architecture** : Identique au modèle 5.3, mais l'Embedding layer est initialisée avec les poids Word2Vec (100 dim, frozen)
-- **Entraînement** : 15 epochs, Adam
+### 5.4 Neural Network — Pre-trained Word2Vec Embedding (`09_keras_pretrained_embedding.py`)
+- **Architecture**: Same as model 5.3, but the Embedding layer is initialized with Word2Vec weights (100 dim, frozen)
+- **Training**: 15 epochs, Adam
 
-**Résultats :**
+**Results:**
 ```
 Accuracy : 0.7957
   negative : f1 = 0.87   positive : f1 = 0.84   neutral : f1 = 0.01
 ```
-**Analyse** : Même accuracy globale que le modèle 5.3, mais la neutralité est encore plus dégradée (f1=0.01). Le gel des embeddings Word2Vec semble limiter l'adaptation à la nuance des avis neutres.
+**Analysis**: Same overall accuracy as model 5.3, but neutrality degrades even further (f1=0.01). Freezing the Word2Vec embeddings appears to limit adaptation to the nuance of neutral reviews.
 
 ---
 
-### Comparaison synthétique des modèles
+### Model Comparison Summary
 
-| Modèle | Accuracy | Neutral F1 | Neg F1 | Pos F1 |
+| Model | Accuracy | Neutral F1 | Neg F1 | Pos F1 |
 |---|---|---|---|---|
 | TF-IDF + LR (baseline) | 0.7525 | **0.32** | 0.86 | 0.81 |
 | BERT Zero-Shot | 0.7800 | 0.24 | **0.88** | 0.84 |
 | Keras Basic Embedding | 0.7957 | 0.09 | 0.86 | 0.85 |
 | Keras Word2Vec Embedding | **0.7957** | 0.01 | 0.87 | **0.85** |
 
-**Conclusion générale** : La classe `neutral` est le point faible commun à tous les modèles. La baseline TF-IDF offre le meilleur compromis sur la classe neutre grâce au paramètre `class_weight='balanced'`. Les modèles deep learning surpassent la baseline en accuracy globale mais sacrifient la classe neutre.
+**General conclusion**: The `neutral` class is the common weak point across all models. The TF-IDF baseline offers the best trade-off on the neutral class thanks to the `class_weight='balanced'` parameter. Deep learning models outperform the baseline in overall accuracy but sacrifice the neutral class.
 
 ---
 
-## 6. Analyse des Erreurs (`10_error_analysis.py`)
+## 6. Error Analysis (`10_error_analysis.py`)
 
-**Données** : 1193 erreurs sur 4821 exemples de test (75.3% d'accuracy).
+**Data**: 1,193 errors out of 4,821 test examples (75.3% accuracy).
 
-### Vrais Positifs prédits Négatifs (63 cas)
-Exemple caractéristique :
+### True Positives predicted as Negative (63 cases)
+Characteristic example:
 > *"je suis satisfait du service. j'ai pu trouver une assurance qui rentre dans mes moyens financiers en tout risque. etant jeune conducteur il est difficile de s'assurer sans que cela nous coûte trop cher."*
 
-Ce texte commence positivement mais inclut "coûte trop cher" → le modèle a capté les mots négatifs liés au prix, alors que l'intention globale est positive. **Cause : ambivalence lexicale.**
+This text starts positively but includes "coûte trop cher" → the model captured the negative pricing words, even though the overall intent is positive. **Cause: lexical ambivalence.**
 
-### Vrais Négatifs prédits Positifs (40 cas)
-Exemple :
+### True Negatives predicted as Positive (40 cases)
+Example:
 > *"suis satisfait du service et les prix attractifs et espérons qu en cas de problème je serais aussi satisfait"*
 
-Ce texte exprime une réserve conditionnelle ("espérons que...") que le modèle n'a pas capté. **Cause : compréhension du conditionnel impossible avec TF-IDF.**
+This text expresses a conditional reservation ("espérons que...") that the model failed to capture. **Cause: understanding of conditionals is impossible with TF-IDF.**
 
-**Bilan** : Les principales sources d'erreur sont la négation implicite, le conditionnel, et les textes avec sentiments mixtes (factuellement positifs mais avec une nuance négative ou vice-versa).
-
----
-
-## 7. Détection de Catégories / Thèmes (`11_category_stars_prediction.py`)
-
-### Méthode : Classification Zero-Shot (BaptisteDoyen/camembert-base-xnli)
-Basée sur CamemBERT + inférence NLI (Natural Language Inference), sans fine-tuning.
-
-**Catégories** : `tarifs / prix`, `service client`, `couverture / garanties`, `remboursement / sinistres`, `résiliation`
-
-**Résultats** (20 échantillons) : Consultables dans `data/processed/sample_categories.csv` et visualisés dans le Tab "Détection de catégories" de l'application Streamlit.
-
-**Avantage** : Aucun label manuel requis. Extensible à de nouvelles catégories sans réentraînement.
+**Summary**: The main sources of error are implicit negation, conditional phrasing, and mixed-sentiment texts (factually positive but with a negative nuance or vice versa).
 
 ---
 
-## 8. Application Streamlit (`src/app.py`)
+## 7. Category / Topic Detection (`11_category_stars_prediction.py`)
 
-L'application propose **5 onglets** :
+### Method: Zero-Shot Classification (BaptisteDoyen/camembert-base-xnli)
+Based on CamemBERT + NLI (Natural Language Inference), without fine-tuning.
 
-| Onglet | Description |
+**Categories**: `pricing`, `customer service`, `coverage / guarantees`, `reimbursement / claims`, `cancellation`
+
+**Results** (20 samples): Available in `data/processed/sample_categories.csv` and visualized in the "Category Detection" tab of the Streamlit app.
+
+**Advantage**: No manual labeling required. Easily extensible to new categories without retraining.
+
+---
+
+## 8. Streamlit Application (`src/app.py`)
+
+The application provides **5 tabs**:
+
+| Tab | Description |
 |---|---|
-| **Sentiment & Explication** | Prédiction en temps réel + importance des mots (LR coefs) + tableau de comparaison des 4 modèles |
-| **Analyse des assureurs** | Note moyenne par assureur, distribution des sentiments, résumés NLP, recherche par mot-clé |
-| **Recherche Sémantique** | Word2Vec : mots similaires + filtrage des avis associés |
-| **Détection de catégories** | Zero-Shot live + données pré-calculées sur l'échantillon |
-| **Résumé & QA (RAG)** | Résumé automatique des avis par assureur + QA extractif (CamemBERT) |
+| **Sentiment & Explanation** | Real-time prediction + word importance (LR coefficients) + comparison table of all 4 models |
+| **Insurer Analysis** | Average rating per insurer, sentiment distribution, NLP summaries, keyword search |
+| **Semantic Search** | Word2Vec: similar words + filtering of associated reviews |
+| **Category Detection** | Live Zero-Shot + pre-computed data on the sample |
+| **Summary & QA (RAG)** | Automatic summary of an insurer's reviews + extractive QA (CamemBERT) |
 
 ---
 
 ## 9. Conclusions & Perspectives
 
-### Points forts
-- Pipeline complet, reproductible bout-en-bout
-- Diversité des approches : classique, deep learning, zero-shot, générative
-- Application interactive démontrant toutes les fonctionnalités
+### Strengths
+- Complete, fully reproducible end-to-end pipeline
+- Diverse approaches: classical ML, deep learning, zero-shot, generative
+- Interactive application demonstrating all features
 
-### Limites identifiées
-- La classe `neutral` est systématiquement sous-performante → nécessite un sur-échantillonnage (SMOTE) ou un modèle dédié
-- La correction orthographique (top 2000 mots) est un compromis vitesse/qualité ; une correction complète améliorait les résultats
-- Le modèle de résumé T5 (`plguillou/t5-base-fr-sum-cnndm`) nécessite une configuration pipeline spécifique
+### Identified Limitations
+- The `neutral` class is consistently underperforming → requires oversampling (SMOTE) or a dedicated model
+- Spell correction (top 2000 words) is a speed/quality trade-off; full correction would improve results
+- The T5 summarization model (`plguillou/t5-base-fr-sum-cnndm`) requires a specific pipeline configuration
 
-### Pistes d'amélioration
-1. Fine-tuning de CamemBERT sur le corpus labellisé pour la détection de thèmes
-2. Utilisation d'un LLM (ex. Mistral, LLaMA) en RAG pour des résumés de meilleure qualité
-3. SMOTE ou class weighting plus agressif pour la classe neutre
-4. Semantic search via FAISS pour une recherche de similarité à l'échelle
+### Future Improvements
+1. Fine-tuning CamemBERT on the labeled corpus for topic detection
+2. Using an LLM (e.g. Mistral, LLaMA) in a RAG setup for higher-quality summaries
+3. SMOTE or more aggressive class weighting for the neutral class
+4. Semantic search via FAISS for similarity search at scale
